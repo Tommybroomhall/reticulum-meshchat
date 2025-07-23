@@ -5,14 +5,11 @@
         <div class="flex bg-white dark:bg-zinc-950 p-2 border-gray-300 dark:border-zinc-900 border-b min-h-16">
             <div class="flex w-full">
                 <div class="hidden sm:flex my-auto w-12 h-12 mr-2">
-                    <img class="w-12 h-12" src="/assets/images/logo-chat-bubble.png" />
+                    <img class="w-12 h-12 dark:hidden" src="/assets/images/ghostgridicon-dark.png" />
+                    <img class="w-12 h-12 hidden dark:block" src="/assets/images/ghostgridicon-light.png" />
                 </div>
                 <div class="my-auto">
-                    <div @click="onAppNameClick" class="font-bold cursor-pointer text-gray-900 dark:text-zinc-100">Reticulum MeshChat</div>
-                    <div class="text-sm text-gray-700 dark:text-white">
-                        Developed by
-                        <a target="_blank" href="https://liamcottle.com" class="text-blue-500 dark:text-blue-400">Liam Cottle</a>
-                    </div>
+                    <div @click="onAppNameClick" class="font-bold cursor-pointer text-gray-900 dark:text-zinc-100">GHOST GRID</div>
                 </div>
                 <div class="flex my-auto ml-auto mr-0 sm:mr-2 space-x-1 sm:space-x-2">
                     <button @click="syncPropagationNode" type="button" class="rounded-full">
@@ -163,20 +160,20 @@
                                 </div>
                             </div>
                             <div v-if="isShowingMyIdentitySection" class="divide-y text-gray-900 border-t border-gray-300 dark:text-zinc-200 dark:border-zinc-900">
-                                <div class="p-1">
-                                    <input 
-                                        v-model="displayName" 
-                                        type="text" 
-                                        placeholder="Display Name" 
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 
+                                <div class="p-3">
+                                    <input
+                                        v-model="displayName"
+                                        type="text"
+                                        placeholder="Display Name"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5
                                                dark:bg-zinc-800 dark:border-zinc-600 dark:text-zinc-200 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                                     >
                                 </div>
-                                <div class="p-1 dark:border-zinc-900">
+                                <div class="p-3 dark:border-zinc-900">
                                     <div>Identity Hash</div>
                                     <div class="text-sm text-gray-700 dark:text-zinc-400">{{ config.identity_hash }}</div>
                                 </div>
-                                <div class="p-1 dark:border-zinc-900">
+                                <div class="p-3 dark:border-zinc-900">
                                     <div>LXMF Address</div>
                                     <div class="text-sm text-gray-700 dark:text-zinc-400">{{ config.lxmf_address_hash }}</div>
                                 </div>
@@ -215,11 +212,11 @@
                                 </div>
                             </div>
                             <div v-if="isShowingAnnounceSection" class="divide-y text-gray-900 border-t border-gray-300 dark:text-zinc-200 dark:border-zinc-900">
-                                <div class="p-1 dark:border-zinc-900">
-                                    <select 
-                                        v-model="config.auto_announce_interval_seconds" 
-                                        @change="onAnnounceIntervalSecondsChange" 
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 
+                                <div class="p-3 dark:border-zinc-900">
+                                    <select
+                                        v-model="config.auto_announce_interval_seconds"
+                                        @change="onAnnounceIntervalSecondsChange"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5
                                                dark:bg-zinc-800 dark:border-zinc-600 dark:text-zinc-200 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                                     >
                                         <option value="0">Disabled</option>
@@ -261,7 +258,7 @@ dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:focus-visible:outli
                                 </div>
                             </div>
                             <div v-if="isShowingCallsSection" class="divide-y text-gray-900 border-t border-gray-300 dark:border-zinc-900">
-                                <div class="p-1 flex dark:border-zinc-900 dark:text-white">
+                                <div class="p-3 flex dark:border-zinc-900 dark:text-white">
                                     <div>
                                         <div>Status</div>
                                         <div class="text-sm text-gray-700 dark:text-white">

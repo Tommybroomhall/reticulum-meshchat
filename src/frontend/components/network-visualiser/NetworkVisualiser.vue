@@ -47,6 +47,27 @@
     color: white !important;
     background: rgba(0, 0, 0, 0.75) !important;
 }
+
+/* Force text color for vis-network labels in dark mode */
+.dark .vis-network .vis-label {
+    color: #ffffff !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Force text color for vis-network labels in light mode */
+.vis-network .vis-label {
+    color: #000000 !important;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Ensure interface names are visible */
+.dark .vis-network text {
+    fill: #ffffff !important;
+}
+
+.vis-network text {
+    fill: #000000 !important;
+}
 </style>
 
 <script>
@@ -54,6 +75,7 @@ import "vis-network/styles/vis-network.css";
 import { Network } from "vis-network";
 import { DataSet } from "vis-data";
 import Utils from "../../js/Utils";
+import * as mdi from "@mdi/js";
 export default {
     name: 'NetworkVisualiser',
     data() {
@@ -118,6 +140,58 @@ export default {
                 console.log(e);
             }
         },
+        updateNetworkTheme() {
+            if (!this.network) return;
+
+            // Update network options with new theme colors
+            this.network.setOptions({
+                nodes: {
+                    font: {
+                        color: this.textColor,
+                        background: this.textBackground,
+                        size: 14,
+                        face: 'arial',
+                        strokeWidth: 1,
+                        strokeColor: this.isDarkMode ? '#000000' : '#ffffff',
+                    },
+                },
+                groups: {
+                    "me": {
+                        font: {
+                            color: this.textColor,
+                            background: this.textBackground,
+                            size: 16,
+                            face: 'arial',
+                            strokeWidth: 1,
+                            strokeColor: this.isDarkMode ? '#000000' : '#ffffff',
+                        },
+                    },
+                    "interface": {
+                        font: {
+                            color: this.textColor,
+                            background: this.textBackground,
+                            size: 12,
+                            face: 'arial',
+                            strokeWidth: 1,
+                            strokeColor: this.isDarkMode ? '#000000' : '#ffffff',
+                        },
+                    },
+                    "announce": {
+                        font: {
+                            color: this.textColor,
+                            background: this.textBackground,
+                            size: 12,
+                            face: 'arial',
+                            strokeWidth: 1,
+                            strokeColor: this.isDarkMode ? '#000000' : '#ffffff',
+                        },
+                    },
+                },
+            });
+
+            // Force a redraw of all nodes
+            this.network.redraw();
+        },
         async init() {
 
             // create network ui
@@ -140,6 +214,14 @@ export default {
                             border: "#000000",
                         },
                     },
+                    font: {
+                        color: this.textColor,
+                        background: this.textBackground,
+                        size: 14,
+                        face: 'arial',
+                        strokeWidth: 1,
+                        strokeColor: this.isDarkMode ? '#000000' : '#ffffff',
+                    },
                 },
                 physics: {
                     barnesHut: {
@@ -155,12 +237,34 @@ export default {
                     "me": {
                         shape: "image",
                         image: "/assets/images/reticulum_logo_512.png",
+                        font: {
+                            color: this.textColor,
+                            background: this.textBackground,
+                            size: 16,
+                            face: 'arial',
+                            strokeWidth: 1,
+                            strokeColor: this.isDarkMode ? '#000000' : '#ffffff',
+                        },
                     },
                     "interface": {
-
+                        font: {
+                            color: this.textColor,
+                            background: this.textBackground,
+                            size: 12,
+                            face: 'arial',
+                            strokeWidth: 1,
+                            strokeColor: this.isDarkMode ? '#000000' : '#ffffff',
+                        },
                     },
                     "announce": {
-
+                        font: {
+                            color: this.textColor,
+                            background: this.textBackground,
+                            size: 12,
+                            face: 'arial',
+                            strokeWidth: 1,
+                            strokeColor: this.isDarkMode ? '#000000' : '#ffffff',
+                        },
                     },
                 },
             });
@@ -222,6 +326,9 @@ export default {
             // update network
             await this.update();
 
+            // update theme after initial load
+            this.updateNetworkTheme();
+
             // fit network after initial load
             setTimeout(() => {
                 this.network.fit({
@@ -264,32 +371,82 @@ export default {
             const nodes = [];
             const edges = [];
 
-            // add me
-            nodes.push({
+            // add me - enhanced GHOST GRID node
+            const meNode = {
                 id: "me",
                 group: "me",
-                size: 60,
-                label: this.config?.display_name ?? "This Device",
-                title: [
-                    `${this.config?.display_name ?? 'This Device'}`,
-                    `Identity: ${this.config?.identity_hash ?? 'Unknown'}`,
-                ].join("\n"),
+                size: 80,
+                label: this.config?.display_name ?? "GHOST GRID",
+                title: this.buildMyNodeTooltip(),
                 font: {
-                    color: "#000000",
-                    background: "#ffffff",
+                    color: this.textColor,
+                    background: this.textBackground,
+                    size: 18,
+                    face: 'arial',
+                    strokeWidth: 2,
+                    strokeColor: this.isDarkMode ? '#000000' : '#ffffff',
                 },
-            });
+                shape: "box",
+                borderWidth: 3,
+                borderWidthSelected: 4,
+                color: {
+                    border: "#10b981", // emerald-500 for GHOST GRID theme
+                    background: this.isDarkMode ? "#1f2937" : "#f9fafb", // gray-800 : gray-50
+                    highlight: {
+                        border: "#059669", // emerald-600
+                        background: this.isDarkMode ? "#374151" : "#f3f4f6", // gray-700 : gray-100
+                    },
+                },
+                shapeProperties: {
+                    borderRadius: 12,
+                },
+                margin: 10,
+            };
+
+            // Add profile icon if available
+            if (this.config?.lxmf_user_icon_name) {
+                meNode.image = this.createProfileIconDataUrl();
+                meNode.shape = "circularImage";
+                meNode.size = 90;
+                meNode.borderWidth = 4;
+                meNode.color = {
+                    border: "#10b981",
+                    highlight: {
+                        border: "#059669",
+                    },
+                };
+            }
+
+            nodes.push(meNode);
 
             // add interfaces
             for(const entry of this.interfaces){
 
-                // determine label
+                // determine label with better formatting
                 var label = entry.interface_name ?? entry.name;
 
                 // we want to show the full info for LocalServerInterface
                 // we also want to show the full info instead of just "Client on Name" for TCPServerInterface clients
                 if(entry.type === "LocalServerInterface" || entry.parent_interface_name != null){
                     label = entry.name;
+                }
+
+                // Clean up the label for better readability
+                if (label) {
+                    // Remove common prefixes and make it more readable
+                    label = label.replace(/^Client on /, '');
+
+                    // For interface names like "4c0ffe-8", add a more descriptive format
+                    if (label.match(/^[a-f0-9]{6}-\d+$/)) {
+                        const interfaceType = entry.type || 'Interface';
+                        const shortType = interfaceType.replace('Interface', '').replace('Server', '');
+                        label = `${shortType} ${label}`;
+                    }
+
+                    // Limit label length for better display
+                    if (label.length > 20) {
+                        label = label.substring(0, 17) + '...';
+                    }
                 }
 
                 const node = {
@@ -305,8 +462,12 @@ export default {
                     ].join("\n"),
                     size: 30,
                     font: {
-                        color: "#000000",
-                        background: '#ffffff',
+                        color: this.textColor,
+                        background: this.textBackground,
+                        size: 12,
+                        face: 'arial',
+                        strokeWidth: 1,
+                        strokeColor: this.isDarkMode ? '#000000' : '#ffffff',
                     },
                     shape: "circularImage",
                     image: entry.status ? "/assets/images/network-visualiser/interface_connected.png" : "/assets/images/network-visualiser/interface_disconnected.png",
@@ -380,6 +541,14 @@ export default {
                     node.image = entry.hops === 1 ? "/assets/images/network-visualiser/user_1hop.png" : "/assets/images/network-visualiser/user.png";
 
                     node.label = name;
+                    node.font = {
+                        color: this.textColor,
+                        background: this.textBackground,
+                        size: 12,
+                        face: 'arial',
+                        strokeWidth: 1,
+                        strokeColor: this.isDarkMode ? '#000000' : '#ffffff',
+                    };
                     node.title = [
                         `Name: ${announce.display_name}`,
                         announce.custom_display_name != null ? `Custom Name: ${announce.custom_display_name}` : null,
@@ -400,6 +569,14 @@ export default {
                     node.image = entry.hops === 1 ? "/assets/images/network-visualiser/server_1hop.png" : "/assets/images/network-visualiser/server.png";
 
                     node.label = name;
+                    node.font = {
+                        color: this.textColor,
+                        background: this.textBackground,
+                        size: 12,
+                        face: 'arial',
+                        strokeWidth: 1,
+                        strokeColor: this.isDarkMode ? '#000000' : '#ffffff',
+                    };
                     node.title = [
                         `Name: ${announce.display_name}`,
                         announce.custom_display_name != null ? `Custom Name: ${announce.custom_display_name}` : null,
@@ -483,11 +660,101 @@ export default {
             this.edges.update(newEdges);
 
         },
+        buildMyNodeTooltip() {
+            if (!this.config) return "GHOST GRID Node";
+
+            const lines = [
+                `🔮 ${this.config.display_name || 'GHOST GRID'}`,
+                ``,
+                `📡 Communication Addresses:`,
+                `Identity Hash: ${this.config.identity_hash || 'Unknown'}`,
+                `LXMF Address: ${this.config.lxmf_address_hash || 'Unknown'}`,
+            ];
+
+            if (this.config.audio_call_address_hash) {
+                lines.push(`Audio Call: ${this.config.audio_call_address_hash}`);
+            }
+
+            if (this.config.lxmf_local_propagation_node_address_hash) {
+                lines.push(`Propagation Node: ${this.config.lxmf_local_propagation_node_address_hash}`);
+            }
+
+            lines.push(``);
+            lines.push(`🌐 Status: ${this.config.is_transport_enabled ? 'Transport Node' : 'End Node'}`);
+
+            if (this.config.auto_announce_enabled) {
+                lines.push(`📢 Auto-announce: Every ${this.config.auto_announce_interval_seconds}s`);
+            }
+
+            return lines.join('\n');
+        },
+        createProfileIconDataUrl() {
+            if (!this.config?.lxmf_user_icon_name) return null;
+
+            const iconName = this.config.lxmf_user_icon_name;
+            const foregroundColor = this.config.lxmf_user_icon_foreground_colour || '#6b7280';
+            const backgroundColor = this.config.lxmf_user_icon_background_colour || '#e5e7eb';
+
+            // Convert icon name from lxmf format to MDI format (same logic as MaterialDesignIcon.vue)
+            const mdiIconName = "mdi" + iconName.split("-").map((word) => {
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            }).join("");
+
+            // Get the icon path from @mdi/js library
+            const iconPath = mdi[mdiIconName] || mdi["mdiProgressQuestion"] || "";
+
+            // If no valid icon path found, fallback to initials
+            if (!iconPath) {
+                const displayText = this.config.display_name ?
+                    this.config.display_name.substring(0, 2).toUpperCase() :
+                    iconName.substring(0, 2).toUpperCase();
+
+                const svg = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+                        <rect width="80" height="80" rx="12" fill="${backgroundColor}" stroke="#10b981" stroke-width="3"/>
+                        <text x="40" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="${foregroundColor}">
+                            ${displayText}
+                        </text>
+                    </svg>
+                `;
+                return 'data:image/svg+xml;base64,' + btoa(svg);
+            }
+
+            // Create SVG with actual MDI icon
+            const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+                    <rect width="80" height="80" rx="12" fill="${backgroundColor}" stroke="#10b981" stroke-width="3"/>
+                    <svg x="16" y="16" width="48" height="48" viewBox="0 0 24 24" fill="${foregroundColor}">
+                        <path d="${iconPath}"/>
+                    </svg>
+                </svg>
+            `;
+
+            // Convert to data URL
+            return 'data:image/svg+xml;base64,' + btoa(svg);
+        },
         formatBytes: function(bytes) {
             return Utils.formatBytes(bytes);
         },
         formatBitsPerSecond: function(bits) {
             return Utils.formatBitsPerSecond(bits);
+        },
+        updateNetworkTheme() {
+            if (this.network) {
+                // Update node font colors for theme change
+                this.network.setOptions({
+                    nodes: {
+                        font: {
+                            color: this.textColor,
+                            background: this.textBackground,
+                            strokeColor: this.isDarkMode ? '#000000' : '#ffffff',
+                        },
+                    },
+                });
+
+                // Trigger a redraw
+                this.network.redraw();
+            }
         },
     },
     computed: {
@@ -499,6 +766,23 @@ export default {
         offlineInterfaces() {
             return this.interfaces.filter((iface) => {
                 return !iface.status;
+            });
+        },
+        isDarkMode() {
+            return this.config?.theme === 'dark';
+        },
+        textColor() {
+            return this.isDarkMode ? '#ffffff' : '#000000';
+        },
+        textBackground() {
+            return this.isDarkMode ? 'rgba(0, 0, 0, 0.7)' : '#ffffff';
+        },
+    },
+    watch: {
+        isDarkMode() {
+            // Update network theme when dark mode changes
+            this.$nextTick(() => {
+                this.updateNetworkTheme();
             });
         },
     },
